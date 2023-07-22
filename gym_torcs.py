@@ -25,7 +25,7 @@ class TorcsEnv:
     SPEED_REWARD_MULTIPLIER = 2.0
     TRACK_CENTER_REWARD = 1.0
     LAP_COMPLETION_REWARD = 100.0
-    TIME_PENALTY = -0.01
+    TIME_PENALTY = -0.20
 
     def __init__(self, vision=False, throttle=False, gear_change=False):
         self.vision = vision
@@ -158,7 +158,7 @@ class TorcsEnv:
         reward = sp * self.SPEED_REWARD_MULTIPLIER
 
         # Encourage staying close to the center of the track
-        reward += self.TRACK_CENTER_REWARD * (1 - abs(obs['trackPos']))
+        reward += sp * self.TRACK_CENTER_REWARD * (1 - abs(obs['trackPos']))
         
         # Encourage progress on the track
         reward += distance_covered * self.PROGRESS_REWARD
