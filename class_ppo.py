@@ -79,7 +79,7 @@ class PPO(object):
             if self.METHOD['name'] == 'kl_pen':
                 kl = tf.distributions.kl_divergence(self.oldpi, self.pi)
                 self.kl_mean = tf.reduce_mean(kl)
-                self.aloss = -(tf.reduce_mean(surr - self.tflam * kl))
+                self.aloss = -(tf.reduce_mean(self.ratio * self.tfadv - self.tflam * kl))
             else:   # clipping method, find this is better
                 self.clipped_ratio = tf.clip_by_value(self.ratio, 1.-self.METHOD['epsilon'], 1.+self.METHOD['epsilon'])
                 self.aloss = -tf.reduce_mean(tf.minimum(self.ratio*self.tfadv, self.clipped_ratio*self.tfadv))
@@ -133,11 +133,14 @@ class PPO(object):
 
         else:   # clipping method, find this is better (OpenAI's paper)
             for _ in range(self.A_UPDATE_STEPS):
-               self.sess.run(self.atrain_op, feed_dict={self.tfs: s, self.tfa: a, self.tfadv: adv})
+                _ ,loss = self.sess.run(self.atrain_op, feed_dict={self.tfs: s, self.tfa: a, self.tfadv: adv})
+                actor_loss = loss
                  
         # update critic
         for _ in range(self.C_UPDATE_STEPS):
-           self.sess.run(self.ctrain_op, {self.tfs: s, self.tfdc_r: r}) 
+            _,loss = self.sess.run(self.ctrain_op, {self.tfs: s, self.tfdc_r: r}) 
+            crit_loss = loss
+        return actor_loss, crit_loss
      
     
     def _build_anet(self, name, trainable):
