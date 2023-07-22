@@ -16,14 +16,9 @@ class TorcsEnv:
     speed_ratio = 1
     termination_limit_progress = 5/speed_ratio  # [km/h], episode terminates if car is running slower than this limit
     default_speed = 50 
-    
     initial_reset = True
     
-    # Constants for reward shaping
-    PROGRESS_REWARD = 10.0
-    COLLISION_PENALTY = -100.0
-    SPEED_REWARD_MULTIPLIER = 2.0
-    TRACK_CENTER_REWARD = 1.0
+    COLLISION_PENALTY = -100
     LAP_COMPLETION_REWARD = 100.0
     TIME_PENALTY = -0.20
 
@@ -151,17 +146,8 @@ class TorcsEnv:
         distance_covered = obs['distFromStart'] - self.old_distFromStart
         #distance_covered = obs['distRaced'] - self.old_distRaced
 
-        #progress = sp*np.cos(obs['angle']) - np.abs(sp*np.sin(obs['angle'])) - sp * np.abs(obs['trackPos'])
-        #reward = progress
-        
-        # Encourage higher speeds, but penalize excessive speed
-        reward = sp * self.SPEED_REWARD_MULTIPLIER
-
-        # Encourage staying close to the center of the track
-        reward += sp * self.TRACK_CENTER_REWARD * (1 - abs(obs['trackPos']))
-        
-        # Encourage progress on the track
-        reward += distance_covered * self.PROGRESS_REWARD
+        progress = sp*np.cos(obs['angle']) - np.abs(sp*np.sin(obs['angle'])) - sp * np.abs(obs['trackPos'])
+        reward = progress
         
         
         # collision detection
@@ -180,12 +166,10 @@ class TorcsEnv:
             print("Out of track ")
             print("***"*10)
             print("***"*10)
-            #reward += -200*np.abs(np.sin(obs['angle']/2)) #out of track penalty
-            #reward += -150*(1-np.exp(-np.abs(8*(obs['angle'])/np.pi)))
+            reward += -200*(1-np.exp(-np.abs(4*(obs['angle'])/np.pi))) #out of track penalty
             episode_terminate = True
             self.oot_count +=1
             if self.oot_count >6:
-                reward = -200
                 client.R.d['meta'] = True
                 self.end_type = 2
 
@@ -198,19 +182,18 @@ class TorcsEnv:
                 print("***"*10)
                 self.no_prog_count += 1
                 episode_terminate = True
-                if self.no_prog_count >9:
-                    reward += -(100)
+                reward += -40*self.no_prog_count
+                if self.no_prog_count >4:
                     client.R.d['meta'] = True
                     self.end_type = 3
                     
         if episode_terminate == False:
-            self.oot_count += -2
-            self.no_prog_count += -2
+            self.oot_count += -1
+            self.no_prog_count += -1
             if self.oot_count < 0:
                 self.oot_count = 0
             if self.no_prog_count < 0:
                 self.no_prog_count = 0
-
 
         if np.cos(obs['angle']) < 0: # Episode is terminated if the agent runs backward
             reward += -200
@@ -221,7 +204,7 @@ class TorcsEnv:
         
         if obs['lastLapTime'] > 0:
             print("...LAP FINISHED...")
-            reward += self.LAP_COMPLETION_REWARD
+            reward = self.LAP_COMPLETION_REWARD
             episode_terminate = True
             client.R.d['meta'] = True
             self.end_type = 5
@@ -235,6 +218,7 @@ class TorcsEnv:
         self.old_distRaced = obs['distRaced']
         self.old_distFromStart = obs['distFromStart']
         self.time_step += 1
+        
         #normalized_reward = (reward - 76.9) / 46.4
         return self.get_obs(), reward, client.R.d['meta'], {}, self.end_type
 
