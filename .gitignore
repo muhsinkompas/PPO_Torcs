@@ -1,7 +1,8 @@
 old/*
 *.pyc
 
-
+!ckpt
+ckpt/*
 !Best
 Best/*
 
