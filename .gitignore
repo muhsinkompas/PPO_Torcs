@@ -1,6 +1,6 @@
 old/*
 *.pyc
-
+performance.txt
 !ckpt
 ckpt/*
 !Best
