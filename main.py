@@ -58,10 +58,10 @@ w_csv = w_Out.OW(csv_path = 'OutputCsv/output.csv')
 w_total_csv = w_Out.OW(csv_path = 'OutputCsv/output_total.csv')
 
 ### ----------------------------------------------------------------------- ###
-actor_losses = []
-critic_losses = []
+#actor_losses = []
+#critic_losses = []
 steps = []
-actor_loss, crit_loss = [0.0 , 0.0]
+#actor_loss, crit_loss = [0.0 , 0.0]
 
 ### ----------------------------------------------------------------------- ###
 
@@ -138,13 +138,14 @@ for ep in range(iter_num, EP_MAX):
 
                 buffer_s, buffer_a, buffer_r = [], [], []
 
-                print("ppo update")              
-                actor_loss, crit_loss = ppo.update(bs, ba, br)
+                print("ppo update")
+                ppo.update(bs, ba, br)
+                #actor_loss, crit_loss = ppo.update(bs, ba, br)
                 
         print("="*100)
         print("--- Episode : {:<4}\tActions ".format(ep)+ np.array2string(a, formatter={'float_kind': '{0:.3f}'.format})+"\tReward : {:8.4f}".format(ep_r)+" ---")
         print("="*100)
-        print("Actor Loss: "+str(actor_loss)+ "\tCrit Loss: "+ str(crit_loss))
+        #print("Actor Loss: "+str(actor_loss)+ "\tCrit Loss: "+ str(crit_loss))
         
         #----------------------------------------------------------------------------------------------------------------
         # Saving outputs to csv file
@@ -157,12 +158,13 @@ for ep in range(iter_num, EP_MAX):
         if (done  == True):
             break
     
-    actor_losses.append(actor_loss)
-    critic_losses.append(crit_loss)
+    #actor_losses.append(actor_loss)
+    #critic_losses.append(crit_loss)
     steps.append(ep)
     ### Saving total outputs for each episode --------------------------------------- ###
     # EDIT HERE AFTER
-    output_total_csv = np.hstack((ep, t, end_type, ob.distRaced, ob.distFromStart, ob.curLapTime, ob.lastLapTime, ep_r, actor_loss, crit_loss))
+    #output_total_csv = np.hstack((ep, t, end_type, ob.distRaced, ob.distFromStart, ob.curLapTime, ob.lastLapTime, ep_r, actor_loss, crit_loss))
+    output_total_csv = np.hstack((ep, t, end_type, ob.distRaced, ob.distFromStart, ob.curLapTime, ob.lastLapTime, ep_r))
     w_total_csv.append_numpy_array_to_csv(np.matrix(output_total_csv))
     ### ----------------------------------------------------------------------------- ###
     

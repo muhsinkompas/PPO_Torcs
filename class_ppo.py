@@ -133,14 +133,16 @@ class PPO(object):
 
         else:   # clipping method, find this is better (OpenAI's paper)
             for _ in range(self.A_UPDATE_STEPS):
-                _ ,loss = self.sess.run(self.atrain_op, feed_dict={self.tfs: s, self.tfa: a, self.tfadv: adv})
-                actor_loss = loss
+                self.sess.run(self.atrain_op, feed_dict={self.tfs: s, self.tfa: a, self.tfadv: adv})
+                #_ ,loss = self.sess.run(self.atrain_op, feed_dict={self.tfs: s, self.tfa: a, self.tfadv: adv})
+                #actor_loss = loss
                  
         # update critic
         for _ in range(self.C_UPDATE_STEPS):
-            _,loss = self.sess.run(self.ctrain_op, {self.tfs: s, self.tfdc_r: r}) 
-            crit_loss = loss
-        return actor_loss, crit_loss
+            self.sess.run(self.ctrain_op, {self.tfs: s, self.tfdc_r: r}) 
+            #_,loss = self.sess.run(self.ctrain_op, {self.tfs: s, self.tfdc_r: r}) 
+            #crit_loss = loss
+        #return actor_loss, crit_loss
      
     
     def _build_anet(self, name, trainable):
