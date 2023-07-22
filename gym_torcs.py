@@ -18,6 +18,14 @@ class TorcsEnv:
     default_speed = 50 
     
     initial_reset = True
+    
+    # Constants for reward shaping
+    PROGRESS_REWARD = 10.0
+    COLLISION_PENALTY = -100.0
+    SPEED_REWARD_MULTIPLIER = 2.0
+    TRACK_CENTER_REWARD = 1.0
+    LAP_COMPLETION_REWARD = 100.0
+    TIME_PENALTY = -0.01
 
     def __init__(self, vision=False, throttle=False, gear_change=False):
         self.vision = vision
@@ -27,7 +35,8 @@ class TorcsEnv:
         self.initial_run = True
         self.oot_count = 0
         self.no_prog_count = 0
-
+        self.old_distRaced = 0.0
+        self.old_distFromStart = 0.0
         ##print("launch torcs")
         os.system('pkill torcs')
         time.sleep(0.5)
@@ -136,15 +145,29 @@ class TorcsEnv:
         sp = np.array(obs['speedX'])/self.speed_ratio
         damage = np.array(obs['damage'])
         rpm = np.array(obs['rpm'])
-
-        progress = sp*np.cos(obs['angle']) - np.abs(sp*np.sin(obs['angle'])) - sp * np.abs(obs['trackPos'])
-        reward = progress
         episode_terminate = False
+        
+        # Calculate the change in distance covered from the previous step
+        distance_covered = obs['distFromStart'] - self.old_distFromStart
+        #distance_covered = obs['distRaced'] - self.old_distRaced
+
+        #progress = sp*np.cos(obs['angle']) - np.abs(sp*np.sin(obs['angle'])) - sp * np.abs(obs['trackPos'])
+        #reward = progress
+        
+        # Encourage higher speeds, but penalize excessive speed
+        reward = sp * self.SPEED_REWARD_MULTIPLIER
+
+        # Encourage staying close to the center of the track
+        reward += self.TRACK_CENTER_REWARD * (1 - abs(obs['trackPos']))
+        
+        # Encourage progress on the track
+        reward += distance_covered * self.PROGRESS_REWARD
+        
         
         # collision detection
         if obs['damage'] - obs_pre['damage'] > 0:
             print("Car was damaged !!!")
-            reward += -(1)
+            reward += self.COLLISION_PENALTY
             #episode_terminate = True
             #client.R.d['meta'] = True
             #self.end_type = 1
@@ -158,24 +181,25 @@ class TorcsEnv:
             print("***"*10)
             print("***"*10)
             #reward += -200*np.abs(np.sin(obs['angle']/2)) #out of track penalty
-            reward += -150*(1-np.exp(-np.abs(8*(obs['angle'])/np.pi)))
+            #reward += -150*(1-np.exp(-np.abs(8*(obs['angle'])/np.pi)))
             episode_terminate = True
             self.oot_count +=1
-            if self.oot_count >9:
+            if self.oot_count >6:
+                reward = -200
                 client.R.d['meta'] = True
                 self.end_type = 2
 
         if self.terminal_judge_start < self.time_step: # Episode terminates if the progress of agent is small
-            if progress < self.termination_limit_progress:
+            if sp < self.termination_limit_progress:
                 print("***"*10)
                 print("***"*10)
-                print("No progress", progress)
+                print("No progress", sp)
                 print("***"*10)
                 print("***"*10)
                 self.no_prog_count += 1
                 episode_terminate = True
-                reward += -(100)
                 if self.no_prog_count >9:
+                    reward += -(100)
                     client.R.d['meta'] = True
                     self.end_type = 3
                     
@@ -197,7 +221,7 @@ class TorcsEnv:
         
         if obs['lastLapTime'] > 0:
             print("...LAP FINISHED...")
-            reward = 100
+            reward += self.LAP_COMPLETION_REWARD
             episode_terminate = True
             client.R.d['meta'] = True
             self.end_type = 5
@@ -205,7 +229,11 @@ class TorcsEnv:
         if client.R.d['meta'] is True: # Send a reset signal
             self.initial_run = False
             client.respond_to_server()
-
+            
+        # Penalize for taking too much time
+        reward += self.TIME_PENALTY
+        self.old_distRaced = obs['distRaced']
+        self.old_distFromStart = obs['distFromStart']
         self.time_step += 1
         #normalized_reward = (reward - 76.9) / 46.4
         return self.get_obs(), reward, client.R.d['meta'], {}, self.end_type
