@@ -15,7 +15,7 @@ EP_LEN = 2000
 GAMMA = 0.95
 
 
-A_LR = 3e-4
+A_LR = 1e-4
 C_LR = 1e-3
 
 BATCH = 64
