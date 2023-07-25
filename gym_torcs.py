@@ -145,7 +145,9 @@ class TorcsEnv:
         # Calculate the change in distance covered from the previous step
         distance_covered = obs['distFromStart'] - self.old_distFromStart
         #distance_covered = obs['distRaced'] - self.old_distRaced
-
+        
+        ############## REWARD ###############3
+        
         progress = sp*np.cos(obs['angle']) - np.abs(sp*np.sin(obs['angle'])) - sp * np.abs(obs['trackPos'])
         reward = progress
         
@@ -166,7 +168,7 @@ class TorcsEnv:
             print("Out of track ")
             print("***"*10)
             print("***"*10)
-            reward += -200*(1-np.exp(-np.abs(4*(obs['angle'])/np.pi))) #out of track penalty
+            reward += -200 #*(1-np.exp(-np.abs(4*(obs['angle'])/np.pi))) #out of track penalty
             episode_terminate = True
             self.oot_count +=1
             if self.oot_count >6:
