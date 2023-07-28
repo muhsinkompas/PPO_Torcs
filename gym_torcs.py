@@ -156,9 +156,9 @@ class TorcsEnv:
         if obs['damage'] - obs_pre['damage'] > 0:
             print("Car was damaged !!!")
             reward += self.COLLISION_PENALTY
-            #episode_terminate = True
-            #client.R.d['meta'] = True
-            #self.end_type = 1
+            episode_terminate = True
+            client.R.d['meta'] = True
+            self.end_type = 1
             
         # Termination judgement #########################
         
@@ -168,7 +168,7 @@ class TorcsEnv:
             print("Out of track ")
             print("***"*10)
             print("***"*10)
-            reward += -200 #*(1-np.exp(-np.abs(4*(obs['angle'])/np.pi))) #out of track penalty
+            reward += -200*(1-np.exp(-np.abs(4*(obs['angle'])/np.pi))) #out of track penalty
             episode_terminate = True
             self.oot_count +=1
             if self.oot_count >6:
