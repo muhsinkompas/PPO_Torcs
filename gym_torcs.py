@@ -222,6 +222,7 @@ class TorcsEnv:
         self.time_step += 1
         
         #normalized_reward = (reward - 76.9) / 46.4
+        reward = reward/200
         return self.get_obs(), reward, client.R.d['meta'], {}, self.end_type
 
     def reset(self, relaunch=False):
