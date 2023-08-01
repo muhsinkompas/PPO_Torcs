@@ -4,8 +4,8 @@ import gym
 import sys
 
 
-nhidden1 = 400
-nhidden2 = 300
+nhidden1 = 300
+nhidden2 = 600
 nhidden3 = 300
 
 
@@ -44,11 +44,11 @@ class PPO(object):
             l2 = tf.layers.dense(l1, nhidden2, activation=None, kernel_initializer=xavier, bias_initializer=bias_const, kernel_regularizer=regularizer)
             #l2 = tf.contrib.layers.batch_norm(l2)
             l2 = tf.nn.relu(l2)
-            l3 = tf.layers.dense(l2, nhidden3, activation=None, kernel_initializer=xavier, bias_initializer=bias_const, kernel_regularizer=regularizer) 
+            #l3 = tf.layers.dense(l2, nhidden3, activation=None, kernel_initializer=xavier, bias_initializer=bias_const, kernel_regularizer=regularizer) 
             #l3 = tf.contrib.layers.batch_norm(l3)
-            l3 = tf.nn.relu(l3)
+            #l3 = tf.nn.relu(l3)
 
-            self.v = tf.layers.dense(l3, 1, activation=None, kernel_initializer=rand_unif, bias_initializer=bias_const)            
+            self.v = tf.layers.dense(l2, 1, activation=None, kernel_initializer=rand_unif, bias_initializer=bias_const)            
             self.advantage = self.tfdc_r - self.v
             self.closs = tf.reduce_mean(tf.square(self.advantage))
             self.ctrain_op = tf.train.AdamOptimizer(self.C_LR).minimize(self.closs)
