@@ -53,6 +53,7 @@ class TorcsEnv:
 
         obs = client.S.d  # Get the current full-observation from torcs
         """
+        
         if throttle is False:
             self.action_space = spaces.Box(low=-1.0, high=1.0, shape=(1,))
         else:
@@ -74,13 +75,15 @@ class TorcsEnv:
         # Apply Action
         action_torcs = client.R.d
         self.end_type = 0
+        self.col_event = 0
+        self.out_of_track_event = 0
+        self.no_prog_event = 0
+        self.wrong_direction_event = 0
         # Steering
         action_torcs['steer'] = this_action['steer']  # in [-1, 1]
 
         #  Simple Autnmatic Throttle Control by Snakeoil
         if self.throttle is False:
-            #sys.exit()
-
             target_speed = self.default_speed
             if client.S.d['speedX'] < target_speed - (client.R.d['steer']*50):
                 client.R.d['accel'] += .01
@@ -151,9 +154,9 @@ class TorcsEnv:
         progress = sp*np.cos(obs['angle']) - np.abs(sp*np.sin(obs['angle'])) - sp * np.abs(obs['trackPos'])
         reward = progress
         
-        
         # collision detection
         if obs['damage'] - obs_pre['damage'] > 0:
+            self.col_event = 1
             print("Car was damaged !!!")
             reward += self.COLLISION_PENALTY
             episode_terminate = True
@@ -161,8 +164,8 @@ class TorcsEnv:
             self.end_type = 1
             
         # Termination judgement #########################
-        
         if (abs(track.any()) > 1 or abs(trackPos) > 1):  # Episode is terminated if the car is out of track
+            self.out_of_track_event = 1
             print("***"*10)
             print("***"*10)
             print("Out of track ")
@@ -177,6 +180,7 @@ class TorcsEnv:
 
         if self.terminal_judge_start < self.time_step: # Episode terminates if the progress of agent is small
             if sp < self.termination_limit_progress:
+                self.no_prog_event = 1
                 print("***"*10)
                 print("***"*10)
                 print("No progress", sp)
@@ -198,6 +202,7 @@ class TorcsEnv:
                 self.no_prog_count = 0
 
         if np.cos(obs['angle']) < 0: # Episode is terminated if the agent runs backward
+            self.wrong_direction_event = 1
             reward += -200
             print("Wrong direction")
             episode_terminate = True
@@ -223,7 +228,8 @@ class TorcsEnv:
         
         #normalized_reward = (reward - 76.9) / 46.4
         reward = reward/200
-        return self.get_obs(), reward, client.R.d['meta'], {}, self.end_type
+        
+        return self.get_obs(), reward, client.R.d['meta'], {}, self.end_type, np.array([self.col_event, self.out_of_track_event, self.no_prog_event, self.wrong_direction_event])
 
     def reset(self, relaunch=False):
         self.time_step = 0

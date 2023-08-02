@@ -54,8 +54,15 @@ file_path = 'Best/bestlaptime.csv'
 r_w = rw.RW(file_path)
 best_lap_time = r_w.read_numpy_array_from_csv()
 print(best_lap_time)
-w_csv = w_Out.OW(csv_path = 'OutputCsv/output.csv')
-w_total_csv = w_Out.OW(csv_path = 'OutputCsv/output_total.csv')
+w_csv = w_Out.OW(csv_path = 'OutputCsv/output.csv',headers = ['ep', 'step', 'a_1', 'a_2', 'a_3' , 'reward', 
+                                                              's_1', 's_2', 's_3', 's_4', 's_5', 's_6', 's_7', 's_8', 's_9', 's_10',
+                                                              's_11', 's_12', 's_13', 's_14', 's_15', 's_16', 's_17', 's_18', 's_19', 's_20',
+                                                              's_21', 's_22', 's_23', 's_24', 's_25', 's_26', 's_27', 's_28', 's_29', 
+                                                              'end_type', 'f_1', 'f_2', 'f_3', 'f_4', 'f_5', 'distRaced', 'distFromStart',
+                                                              'curLapTime', 'lastLapTime'])
+w_total_csv = w_Out.OW(csv_path = 'OutputCsv/output_total.csv',headers = ['ep', 'step', 'end_type', 'col_count', 'oot_count', 'np_count', 
+                                                                          'wrong_direction', 'speedX', 'distRaced', 'distFromStart', 'last_lap_distance', 
+                                                                          'curLapTime', 'lastLapTime', 'total_reward'])
 
 ### ----------------------------------------------------------------------- ###
 #actor_losses = []
@@ -84,8 +91,10 @@ for ep in range(iter_num, EP_MAX):
     s = np.hstack((ob.angle, ob.track, ob.trackPos, ob.speedX, ob.speedY, ob.speedZ, ob.wheelSpinVel/100.0, ob.rpm))
 
     buffer_s, buffer_a, buffer_r = [], [], []
-    ep_r = 0
-
+    last_lap_distance = 0
+    total_reward = 0
+    event_counts = np.array([0, 0, 0, 0])
+    
     for t in range(EP_LEN):    # in one episode
        
         a = ppo.choose_action(s)
@@ -98,8 +107,8 @@ for ep in range(iter_num, EP_MAX):
         #print("a: ", a)
 
 
-        ob, r, done, _, end_type = env.step(a)
-        
+        ob, r, done, _, end_type, event_buff = env.step(a)
+        event_counts = event_counts + event_buff
         ### LAST LAP TIME ### CHECK HERE
         if ob.lastLapTime > 0:
             print("lap time is : ",ob.lastLapTime)
@@ -119,7 +128,7 @@ for ep in range(iter_num, EP_MAX):
             buffer_r.append(r)    
 
         s = s_
-        ep_r += r
+        total_reward += r
 
         if (train_test == 0):
             # update ppo
@@ -143,9 +152,12 @@ for ep in range(iter_num, EP_MAX):
                 #actor_loss, crit_loss = ppo.update(bs, ba, br)
                 
         print("="*100)
-        print("--- Episode : {:<4}\tActions ".format(ep)+ np.array2string(a, formatter={'float_kind': '{0:.3f}'.format})+"\tReward : {:8.4f}".format(ep_r)+" ---")
+        print("--- Episode : {:<4}\tActions ".format(ep)+ np.array2string(a, formatter={'float_kind': '{0:.3f}'.format})+"\tReward : {:8.4f}".format(total_reward)+" ---")
         print("="*100)
         #print("Actor Loss: "+str(actor_loss)+ "\tCrit Loss: "+ str(crit_loss))
+        
+        if ob.distFromStart > last_lap_distance:
+            last_lap_distance = ob.distFromStart
         
         #----------------------------------------------------------------------------------------------------------------
         # Saving outputs to csv file
@@ -163,8 +175,9 @@ for ep in range(iter_num, EP_MAX):
     steps.append(ep)
     ### Saving total outputs for each episode --------------------------------------- ###
     # EDIT HERE AFTER
-    #output_total_csv = np.hstack((ep, t, end_type, ob.distRaced, ob.distFromStart, ob.curLapTime, ob.lastLapTime, ep_r, actor_loss, crit_loss))
-    output_total_csv = np.hstack((ep, t, end_type, ob.distRaced, ob.distFromStart, ob.curLapTime, ob.lastLapTime, ep_r))
+    #output_total_csv = np.hstack((ep, t, end_type, ob.distRaced, ob.distFromStart, ob.curLapTime, ob.lastLapTime, total_reward, actor_loss, crit_loss))
+    #output_total_csv = np.hstack((ep, t, end_type, ob.distRaced, ob.distFromStart, ob.curLapTime, ob.lastLapTime, total_reward))
+    output_total_csv = np.hstack((ep, t, end_type, event_counts, ob.speedX, ob.distRaced, ob.distFromStart, last_lap_distance, ob.curLapTime, ob.lastLapTime, total_reward))
     w_total_csv.append_numpy_array_to_csv(np.matrix(output_total_csv))
     ### ----------------------------------------------------------------------------- ###
     
@@ -172,7 +185,7 @@ for ep in range(iter_num, EP_MAX):
 
     if (train_test == 0):
         with open("performance.txt", "a") as myfile:
-            myfile.write(str(ep) + " " + str(t) + " " + str(round(ep_r,4)) + "\n")
+            myfile.write(str(ep) + " " + str(t) + " " + str(round(total_reward,4)) + "\n")
 
     if np.mod(ep, 100) == 99:
         if (train_test ==0):

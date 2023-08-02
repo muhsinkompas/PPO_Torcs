@@ -3,8 +3,11 @@ import csv
 
 
 class OW:
-    def __init__(self, csv_path):
+    def __init__(self, csv_path, headers = None):
         self.csv_path = csv_path
+        if headers is not None:
+            with open(self.csv_path, 'w') as csvfile:
+                csvfile.write(','.join(headers) + '\n')
 
     def write_numpy_array_to_csv(self, array):
         np.savetxt(self.csv_path, array, delimiter=',')
