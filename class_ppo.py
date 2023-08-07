@@ -4,9 +4,9 @@ import gym
 import sys
 
 
-nhidden1 = 300
-nhidden2 = 600
-#nhidden3 = 300
+nhidden1 = 400
+nhidden2 = 300
+nhidden3 = 300
 
 
 xavier = tf.contrib.layers.xavier_initializer()
@@ -44,11 +44,11 @@ class PPO(object):
             l2 = tf.layers.dense(l1, nhidden2, activation=None, kernel_initializer=xavier, bias_initializer=bias_const, kernel_regularizer=regularizer)
             #l2 = tf.contrib.layers.batch_norm(l2)
             l2 = tf.nn.relu(l2)
-            #l3 = tf.layers.dense(l2, nhidden3, activation=None, kernel_initializer=xavier, bias_initializer=bias_const, kernel_regularizer=regularizer) 
+            l3 = tf.layers.dense(l2, nhidden3, activation=None, kernel_initializer=xavier, bias_initializer=bias_const, kernel_regularizer=regularizer) 
             #l3 = tf.contrib.layers.batch_norm(l3)
-            #l3 = tf.nn.relu(l3)
+            l3 = tf.nn.relu(l3)
 
-            self.v = tf.layers.dense(l2, 1, activation=None, kernel_initializer=rand_unif, bias_initializer=bias_const)            
+            self.v = tf.layers.dense(l3, 1, activation=None, kernel_initializer=rand_unif, bias_initializer=bias_const)            
             self.advantage = self.tfdc_r - self.v
             self.closs = tf.reduce_mean(tf.square(self.advantage))
             self.ctrain_op = tf.train.AdamOptimizer(self.C_LR).minimize(self.closs)
@@ -153,13 +153,13 @@ class PPO(object):
             l2 = tf.layers.dense(l1, nhidden2, activation=None, trainable=trainable, kernel_initializer=xavier, bias_initializer=bias_const, kernel_regularizer=regularizer)
             #l2 = tf.contrib.layers.batch_norm(l2)
             l2 = tf.nn.relu(l2)
-            #l3 = tf.layers.dense(l2, nhidden3, activation=None, trainable=trainable, kernel_initializer=xavier, bias_initializer=bias_const, kernel_regularizer=regularizer)
+            l3 = tf.layers.dense(l2, nhidden3, activation=None, trainable=trainable, kernel_initializer=xavier, bias_initializer=bias_const, kernel_regularizer=regularizer)
             #l3 = tf.contrib.layers.batch_norm(l3)
-            #l3 = tf.nn.relu(l3)
+            l3 = tf.nn.relu(l3)
 
-            mu_st = tf.layers.dense(l2, 1, activation=tf.nn.tanh, trainable=trainable, kernel_initializer=rand_unif, bias_initializer=bias_const)
-            mu_acc = tf.layers.dense(l2, 1, activation=tf.nn.sigmoid, trainable=trainable, kernel_initializer=rand_unif, bias_initializer=bias_const) 
-            mu_br = tf.layers.dense(l2, 1, activation=tf.nn.sigmoid, trainable=trainable, kernel_initializer=rand_unif, bias_initializer=bias_const)
+            mu_st = tf.layers.dense(l3, 1, activation=tf.nn.tanh, trainable=trainable, kernel_initializer=rand_unif, bias_initializer=bias_const)
+            mu_acc = tf.layers.dense(l3, 1, activation=tf.nn.sigmoid, trainable=trainable, kernel_initializer=rand_unif, bias_initializer=bias_const) 
+            mu_br = tf.layers.dense(l3, 1, activation=tf.nn.sigmoid, trainable=trainable, kernel_initializer=rand_unif, bias_initializer=bias_const)
 
             small = tf.constant(1e-6)
             mu_st = tf.clip_by_value(mu_st,-1.0+small,1.0-small)
@@ -169,9 +169,9 @@ class PPO(object):
             mu = tf.concat([mu_st, mu_acc, mu_br], axis=1)          
 
             #sigma = tf.layers.dense(l2, self.A_DIM, tf.nn.softplus, trainable=trainable)
-            sigma_st = tf.layers.dense(l2, 1, activation=tf.nn.sigmoid, trainable=trainable, kernel_initializer=rand_unif, bias_initializer=bias_const)
-            sigma_acc = tf.layers.dense(l2, 1, activation=tf.nn.sigmoid, trainable=trainable, kernel_initializer=rand_unif, bias_initializer=bias_const)
-            sigma_br = tf.layers.dense(l2, 1, activation=tf.nn.sigmoid, trainable=trainable, kernel_initializer=rand_unif, bias_initializer=bias_const)
+            sigma_st = tf.layers.dense(l3, 1, activation=tf.nn.sigmoid, trainable=trainable, kernel_initializer=rand_unif, bias_initializer=bias_const)
+            sigma_acc = tf.layers.dense(l3, 1, activation=tf.nn.sigmoid, trainable=trainable, kernel_initializer=rand_unif, bias_initializer=bias_const)
+            sigma_br = tf.layers.dense(l3, 1, activation=tf.nn.sigmoid, trainable=trainable, kernel_initializer=rand_unif, bias_initializer=bias_const)
             sigma_st = tf.scalar_mul(0.2,sigma_st) # scalar mult            
             sigma_acc = tf.scalar_mul(0.2,sigma_acc) # scalar mult 
             sigma_br = tf.scalar_mul(0.05,sigma_br) # scalar mult 
