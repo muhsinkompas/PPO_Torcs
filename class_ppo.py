@@ -165,7 +165,7 @@ class PPO(object):
             mu_st = tf.clip_by_value(mu_st,-1.0+small,1.0-small)
             mu_acc = tf.clip_by_value(mu_acc,0.0+small,1.0-small) 
             mu_br = tf.clip_by_value(mu_br,0.0+small,1.0-small)
-            mu_br = tf.scalar_mul(0.1,mu_br) # scalar mult
+            #mu_br = tf.scalar_mul(0.1,mu_br) # scalar mult
             mu = tf.concat([mu_st, mu_acc, mu_br], axis=1)          
 
             #sigma = tf.layers.dense(l2, self.A_DIM, tf.nn.softplus, trainable=trainable)
