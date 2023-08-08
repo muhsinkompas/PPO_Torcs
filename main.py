@@ -16,7 +16,7 @@ GAMMA = 0.95
 
 
 A_LR = 5e-5
-C_LR = 1e-3
+C_LR = 1e-4
 
 BATCH = 64
 A_UPDATE_STEPS = 10
