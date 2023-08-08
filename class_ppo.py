@@ -89,7 +89,7 @@ class PPO(object):
                 entropy = tf.reduce_mean(entropy,axis=0)    
                 #self.aloss -= 0.01 * entropy
                 # KAUSHIK CHANGD THIS  
-                self.aloss -= 0.01 * entropy
+                self.aloss -= 0.001 * entropy
 
 
         with tf.variable_scope('atrain'):
