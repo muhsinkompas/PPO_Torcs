@@ -98,26 +98,13 @@ for ep in range(iter_num, EP_MAX):
     for t in range(EP_LEN):    # in one episode
        
         a = ppo.choose_action(s)
-
         
         a[0] = np.clip(a[0],-1.0,1.0)
         a[1] = np.clip(a[1],0.0,1.0)
         a[2] = np.clip(a[2],0.0,1.0)  
 
-        #print("a: ", a)
-
-
         ob, r, done, _, end_type, event_buff = env.step(a)
         event_counts = event_counts + event_buff
-        ### LAST LAP TIME ### CHECK HERE
-        if ob.lastLapTime > 0:
-            print("lap time is : ",ob.lastLapTime)
-            if (ob.lastLapTime < best_lap_time) and (train_test==0):
-                best_lap_time = ob.lastLapTime
-                r_w.write_numpy_array_to_csv(best_lap_time)
-                saver.save(sess, "Best/model")
-                print("Best Lap Time is updated.")
-                print("saving Best model")
         
         s_ = np.hstack((ob.angle, ob.track, ob.trackPos, ob.speedX, ob.speedY, ob.speedZ, ob.wheelSpinVel/100.0, ob.rpm))  
 
@@ -151,10 +138,19 @@ for ep in range(iter_num, EP_MAX):
                 ppo.update(bs, ba, br)
                 #actor_loss, crit_loss = ppo.update(bs, ba, br)
                 
+        ### LAST LAP TIME ### CHECK HERE
+        if ob.lastLapTime > 0:
+            print("lap time is : ",ob.lastLapTime)
+            if (ob.lastLapTime < best_lap_time) and (train_test==0):
+                best_lap_time = ob.lastLapTime
+                r_w.write_numpy_array_to_csv(best_lap_time)
+                saver.save(sess, "Best/model.ckpt")
+                print("Best Lap Time is updated.")
+                print("saving Best model")
+                
         print("="*100)
         print("--- Episode : {:<4}\tActions ".format(ep)+ np.array2string(a, formatter={'float_kind': '{0:.3f}'.format})+"\tReward : {:8.4f}".format(total_reward)+" ---")
         print("="*100)
-        #print("Actor Loss: "+str(actor_loss)+ "\tCrit Loss: "+ str(crit_loss))
         
         if ob.distFromStart > last_lap_distance:
             last_lap_distance = ob.distFromStart
@@ -174,9 +170,6 @@ for ep in range(iter_num, EP_MAX):
     #critic_losses.append(crit_loss)
     steps.append(ep)
     ### Saving total outputs for each episode --------------------------------------- ###
-    # EDIT HERE AFTER
-    #output_total_csv = np.hstack((ep, t, end_type, ob.distRaced, ob.distFromStart, ob.curLapTime, ob.lastLapTime, total_reward, actor_loss, crit_loss))
-    #output_total_csv = np.hstack((ep, t, end_type, ob.distRaced, ob.distFromStart, ob.curLapTime, ob.lastLapTime, total_reward))
     output_total_csv = np.hstack((ep, t, end_type, event_counts, ob.speedX, ob.distRaced, ob.distFromStart, last_lap_distance, ob.curLapTime, ob.lastLapTime, total_reward))
     w_total_csv.append_numpy_array_to_csv(np.matrix(output_total_csv))
     ### ----------------------------------------------------------------------------- ###
@@ -192,7 +185,7 @@ for ep in range(iter_num, EP_MAX):
             file_name = 'Models/'+str(ep+1)
             if os.path.isdir(file_name) ==False:
                 os.mkdir(file_name)
-            model_name = file_name+'/model'
+            model_name = file_name+'/model.ckpt'
             print("saving model")
             saver.save(sess, model_name)
 
