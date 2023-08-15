@@ -11,14 +11,14 @@ import os
 #----------------------------------------------------------------------------------------
 
 EP_MAX = 4000
-EP_LEN = 2000
+EP_LEN = 4000
 GAMMA = 0.95
 
 
 A_LR = 5e-5
-C_LR = 1e-3
+C_LR = 1e-4
 
-BATCH = 32
+BATCH = 64
 A_UPDATE_STEPS = 10
 C_UPDATE_STEPS = 10
 S_DIM, A_DIM = 29, 3
