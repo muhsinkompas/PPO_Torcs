@@ -162,21 +162,21 @@ class PPO(object):
             mu_br = tf.layers.dense(l3, 1, activation=tf.nn.sigmoid, trainable=trainable, kernel_initializer=rand_unif, bias_initializer=bias_const)
 
             small = tf.constant(1e-6)
+            mu_br = tf.scalar_mul(0.05,mu_st) # scalar mult
+            mu_br = tf.scalar_mul(0.05,mu_acc) # scalar mult
+            mu_br = tf.scalar_mul(0.05,mu_br) # scalar mult
             mu_st = tf.clip_by_value(mu_st,-1.0+small,1.0-small)
             mu_acc = tf.clip_by_value(mu_acc,0.0+small,1.0-small) 
             mu_br = tf.clip_by_value(mu_br,0.0+small,1.0-small)
-            #mu_br = tf.scalar_mul(0.1,mu_st) # scalar mult
-            #mu_br = tf.scalar_mul(0.1,mu_acc) # scalar mult
-            #mu_br = tf.scalar_mul(0.1,mu_br) # scalar mult
             mu = tf.concat([mu_st, mu_acc, mu_br], axis=1)          
 
             #sigma = tf.layers.dense(l2, self.A_DIM, tf.nn.softplus, trainable=trainable)
-            sigma_st = tf.layers.dense(l3, 1, activation=tf.nn.sigmoid, trainable=trainable, kernel_initializer=rand_unif, bias_initializer=bias_const)
+            sigma_st = tf.layers.dense(l3, 1, activation=tf.nn.tanh, trainable=trainable, kernel_initializer=rand_unif, bias_initializer=bias_const)
             sigma_acc = tf.layers.dense(l3, 1, activation=tf.nn.sigmoid, trainable=trainable, kernel_initializer=rand_unif, bias_initializer=bias_const)
             sigma_br = tf.layers.dense(l3, 1, activation=tf.nn.sigmoid, trainable=trainable, kernel_initializer=rand_unif, bias_initializer=bias_const)
-            #sigma_st = tf.scalar_mul(0.2,sigma_st) # scalar mult            
-            #sigma_acc = tf.scalar_mul(0.2,sigma_acc) # scalar mult 
-            #sigma_br = tf.scalar_mul(0.2,sigma_br) # scalar mult           
+            sigma_st = tf.scalar_mul(0.2,sigma_st) # scalar mult            
+            sigma_acc = tf.scalar_mul(0.2,sigma_acc) # scalar mult 
+            sigma_br = tf.scalar_mul(0.2,sigma_br) # scalar mult           
             sigma_st = tf.clip_by_value(sigma_st,-1.0+small,1.0-small)
             sigma_acc = tf.clip_by_value(sigma_acc,0.0+small,1.0-small)
             sigma_br = tf.clip_by_value(sigma_br,0.0+small,1.0-small)
