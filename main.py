@@ -98,14 +98,10 @@ for ep in range(iter_num, EP_MAX):
     for t in range(EP_LEN):    # in one episode
        
         a = ppo.choose_action(s)
-
         
         a[0] = np.clip(a[0],-1.0,1.0)
         a[1] = np.clip(a[1],0.0,1.0)
         a[2] = np.clip(a[2],0.0,1.0)  
-
-        #print("a: ", a)
-
 
         ob, r, done, _, end_type, event_buff = env.step(a)
         event_counts = event_counts + event_buff
@@ -155,7 +151,6 @@ for ep in range(iter_num, EP_MAX):
         print("="*100)
         print("--- Episode : {:<4}\tActions ".format(ep)+ np.array2string(a, formatter={'float_kind': '{0:.3f}'.format})+"\tReward : {:8.4f}".format(total_reward)+" ---")
         print("="*100)
-        #print("Actor Loss: "+str(actor_loss)+ "\tCrit Loss: "+ str(crit_loss))
         
         if ob.distFromStart > last_lap_distance:
             last_lap_distance = ob.distFromStart
@@ -175,9 +170,6 @@ for ep in range(iter_num, EP_MAX):
     #critic_losses.append(crit_loss)
     steps.append(ep)
     ### Saving total outputs for each episode --------------------------------------- ###
-    # EDIT HERE AFTER
-    #output_total_csv = np.hstack((ep, t, end_type, ob.distRaced, ob.distFromStart, ob.curLapTime, ob.lastLapTime, total_reward, actor_loss, crit_loss))
-    #output_total_csv = np.hstack((ep, t, end_type, ob.distRaced, ob.distFromStart, ob.curLapTime, ob.lastLapTime, total_reward))
     output_total_csv = np.hstack((ep, t, end_type, event_counts, ob.speedX, ob.distRaced, ob.distFromStart, last_lap_distance, ob.curLapTime, ob.lastLapTime, total_reward))
     w_total_csv.append_numpy_array_to_csv(np.matrix(output_total_csv))
     ### ----------------------------------------------------------------------------- ###
