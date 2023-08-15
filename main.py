@@ -109,15 +109,6 @@ for ep in range(iter_num, EP_MAX):
 
         ob, r, done, _, end_type, event_buff = env.step(a)
         event_counts = event_counts + event_buff
-        ### LAST LAP TIME ### CHECK HERE
-        if ob.lastLapTime > 0:
-            print("lap time is : ",ob.lastLapTime)
-            if (ob.lastLapTime < best_lap_time) and (train_test==0):
-                best_lap_time = ob.lastLapTime
-                r_w.write_numpy_array_to_csv(best_lap_time)
-                saver.save(sess, "Best/model")
-                print("Best Lap Time is updated.")
-                print("saving Best model")
         
         s_ = np.hstack((ob.angle, ob.track, ob.trackPos, ob.speedX, ob.speedY, ob.speedZ, ob.wheelSpinVel/100.0, ob.rpm))  
 
@@ -150,6 +141,16 @@ for ep in range(iter_num, EP_MAX):
                 print("ppo update")
                 ppo.update(bs, ba, br)
                 #actor_loss, crit_loss = ppo.update(bs, ba, br)
+                
+        ### LAST LAP TIME ### CHECK HERE
+        if ob.lastLapTime > 0:
+            print("lap time is : ",ob.lastLapTime)
+            if (ob.lastLapTime < best_lap_time) and (train_test==0):
+                best_lap_time = ob.lastLapTime
+                r_w.write_numpy_array_to_csv(best_lap_time)
+                saver.save(sess, "Best/model.ckpt")
+                print("Best Lap Time is updated.")
+                print("saving Best model")
                 
         print("="*100)
         print("--- Episode : {:<4}\tActions ".format(ep)+ np.array2string(a, formatter={'float_kind': '{0:.3f}'.format})+"\tReward : {:8.4f}".format(total_reward)+" ---")
@@ -192,7 +193,7 @@ for ep in range(iter_num, EP_MAX):
             file_name = 'Models/'+str(ep+1)
             if os.path.isdir(file_name) ==False:
                 os.mkdir(file_name)
-            model_name = file_name+'/model'
+            model_name = file_name+'/model.ckpt'
             print("saving model")
             saver.save(sess, model_name)
 
