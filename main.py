@@ -44,7 +44,7 @@ sess = tf.Session()
 
 ppo = PPO(sess, S_DIM, A_DIM, A_LR, C_LR, A_UPDATE_STEPS, C_UPDATE_STEPS, METHOD)
 
-saver = tf.train.Saver()
+saver = tf.train.Saver(max_to_keep=50)
 
 env = TorcsEnv(vision=False, throttle=True, gear_change=False)
 
