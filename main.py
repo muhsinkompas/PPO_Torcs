@@ -15,10 +15,10 @@ EP_LEN = 4000
 GAMMA = 0.95
 
 
-A_LR = 5e-5
+A_LR = 1e-4
 C_LR = 1e-4
 
-BATCH = 128
+BATCH = 64
 A_UPDATE_STEPS = 10
 C_UPDATE_STEPS = 10
 S_DIM, A_DIM = 29, 3
@@ -33,7 +33,7 @@ train_test = 0
 # irestart = 0 for fresh restart; =1 for restart from ckpt file
 irestart = 0
 iter_num = 0
-relaunch_le = 50 #relaunch for leak memory error.
+relaunch_le = 25 #relaunch for leak memory error.
 
 if (irestart == 0):
     iter_num = 0
@@ -75,7 +75,7 @@ steps = []
 if (train_test == 0 and irestart == 0):
     sess.run(tf.global_variables_initializer())
 else:
-    saver.restore(sess, "ckpt/model")  
+    saver.restore(sess, "weights/model.ckpt")  
 
 
 for ep in range(iter_num, EP_MAX):
@@ -159,8 +159,8 @@ for ep in range(iter_num, EP_MAX):
         # Saving outputs to csv file
         #print("saving csv")
         #### ADD LOSS HERE
-        output_csv = np.hstack((ep, t, a, r, s, end_type, ob.focus, ob.distRaced, ob.distFromStart, ob.curLapTime, ob.lastLapTime))
-        w_csv.append_numpy_array_to_csv(np.matrix(output_csv))
+        #output_csv = np.hstack((ep, t, a, r, s, end_type, ob.focus, ob.distRaced, ob.distFromStart, ob.curLapTime, ob.lastLapTime))
+        #w_csv.append_numpy_array_to_csv(np.matrix(output_csv))
         #----------------------------------------------------------------------------------------------------------------
 
         if (done  == True):

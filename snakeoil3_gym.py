@@ -65,7 +65,7 @@ data_size = 2**17
 # Initialize help messages
 ophelp=  'Options:\n'
 ophelp+= ' --host, -H <host>    TORCS server host. [localhost]\n'
-ophelp+= ' --port, -p <port>    TORCS port. [3001]\n'
+ophelp+= ' --port, -p <port>    TORCS port. [3101]\n'
 ophelp+= ' --id, -i <id>        ID for server. [SCR]\n'
 ophelp+= ' --steps, -m <#>      Maximum simulation steps. 1 sec ~ 50 steps. [100000]\n'
 ophelp+= ' --episodes, -e <#>   Maximum learning episodes. [1]\n'
@@ -121,7 +121,7 @@ class Client():
         self.vision = vision
 
         self.host= 'localhost'
-        self.port= 3001
+        self.port= 3101
         self.sid= 'SCR'
         self.maxEpisodes=1 # "Maximum number of learning episodes to perform"
         self.trackname= 'unknown'
