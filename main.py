@@ -157,10 +157,10 @@ for ep in range(iter_num, EP_MAX):
         
         #----------------------------------------------------------------------------------------------------------------
         # Saving outputs to csv file
-        #print("saving csv")
+        # print("saving csv")
         #### ADD LOSS HERE
-        #output_csv = np.hstack((ep, t, a, r, s, end_type, ob.focus, ob.distRaced, ob.distFromStart, ob.curLapTime, ob.lastLapTime))
-        #w_csv.append_numpy_array_to_csv(np.matrix(output_csv))
+        output_csv = np.hstack((ep, t, a, r, s, end_type, ob.focus, ob.distRaced, ob.distFromStart, ob.curLapTime, ob.lastLapTime))
+        w_csv.append_numpy_array_to_csv(np.matrix(output_csv))
         #----------------------------------------------------------------------------------------------------------------
 
         if (done  == True):
