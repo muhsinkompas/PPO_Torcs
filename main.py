@@ -29,9 +29,9 @@ METHOD = [
 
 
 # train_test = 0 for train; =1 for test
-train_test = 0
+train_test = 1
 # irestart = 0 for fresh restart; =1 for restart from ckpt file
-irestart = 0
+irestart = 1
 iter_num = 0
 relaunch_le = 25 #relaunch for leak memory error.
 
@@ -63,6 +63,8 @@ w_csv = w_Out.OW(csv_path = 'OutputCsv/output.csv',headers = ['ep', 'step', 'a_1
 w_total_csv = w_Out.OW(csv_path = 'OutputCsv/output_total.csv',headers = ['ep', 'step', 'end_type', 'col_count', 'oot_count', 'np_count', 
                                                                           'wrong_direction', 'speedX', 'distRaced', 'distFromStart', 'last_lap_distance', 
                                                                           'curLapTime', 'lastLapTime', 'total_reward'])
+w_event_csv = w_Out.OW(csv_path = 'OutputCsv/event_history.csv',headers = ['ep', 'step', 'col_count', 'oot_count', 'np_count', 
+                                                                          'wrong_direction', 'distFromStart'])
 
 ### ----------------------------------------------------------------------- ###
 #actor_losses = []
@@ -94,6 +96,7 @@ for ep in range(iter_num, EP_MAX):
     last_lap_distance = 0
     total_reward = 0
     event_counts = np.array([0, 0, 0, 0])
+    event_list = np.array([0, 0, 0, 0, 0, 0, 0])
     
     for t in range(EP_LEN):    # in one episode
        
@@ -105,6 +108,9 @@ for ep in range(iter_num, EP_MAX):
 
         ob, r, done, _, end_type, event_buff = env.step(a)
         event_counts = event_counts + event_buff
+        if np.sum(event_buff) > 0:
+            event_list_buff = np.hstack((i, j, event_buff, ob.distFromStart))
+            event_list = np.vstack((event_list, event_list_buff))
         
         s_ = np.hstack((ob.angle, ob.track, ob.trackPos, ob.speedX, ob.speedY, ob.speedZ, ob.wheelSpinVel/100.0, ob.rpm))  
 
@@ -172,6 +178,7 @@ for ep in range(iter_num, EP_MAX):
     ### Saving total outputs for each episode --------------------------------------- ###
     output_total_csv = np.hstack((ep, t, end_type, event_counts, ob.speedX, ob.distRaced, ob.distFromStart, last_lap_distance, ob.curLapTime, ob.lastLapTime, total_reward))
     w_total_csv.append_numpy_array_to_csv(np.matrix(output_total_csv))
+    w_event_csv.append_numpy_array_to_csv(np.matrix(event_list))
     ### ----------------------------------------------------------------------------- ###
     
     
