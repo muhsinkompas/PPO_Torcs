@@ -29,9 +29,9 @@ METHOD = [
 
 
 # train_test = 0 for train; =1 for test
-train_test = 1
+train_test = 0
 # irestart = 0 for fresh restart; =1 for restart from ckpt file
-irestart = 1
+irestart = 0
 iter_num = 0
 relaunch_le = 25 #relaunch for leak memory error.
 
