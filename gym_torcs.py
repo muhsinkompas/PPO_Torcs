@@ -152,6 +152,7 @@ class TorcsEnv:
         ############## REWARD ###############3
         
         progress = sp*np.cos(obs['angle']) - np.abs(sp*np.sin(obs['angle'])) - sp * np.abs(obs['trackPos'])
+        #progress = sp*np.cos(obs['angle']) - 0.5*np.abs(sp*np.sin(obs['angle'])) - sp*0.5* np.abs(obs['trackPos'])
         reward = progress
         
         # collision detection
@@ -211,7 +212,7 @@ class TorcsEnv:
         
         if obs['lastLapTime'] > 0:
             print("...LAP FINISHED...")
-            reward = self.LAP_COMPLETION_REWARD
+            #reward = self.LAP_COMPLETION_REWARD
             episode_terminate = True
             client.R.d['meta'] = True
             self.end_type = 5

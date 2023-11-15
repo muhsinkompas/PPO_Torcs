@@ -71,7 +71,7 @@ w_event_csv = w_Out.OW(csv_path = 'OutputCsv/event_history.csv',headers = ['ep',
 #critic_losses = []
 steps = []
 #actor_loss, crit_loss = [0.0 , 0.0]
-
+best_reward = 0
 ### ----------------------------------------------------------------------- ###
 
 if (train_test == 0 and irestart == 0):
@@ -153,6 +153,12 @@ for ep in range(iter_num, EP_MAX):
                 saver.save(sess, "Best/model.ckpt")
                 print("Best Lap Time is updated.")
                 print("saving Best model")
+            elif (best_reward < total_reward) and (train_test==0):
+                best_reward = total_reward
+                saver.save(sess, "results/model.ckpt")
+                print("Best total reward is updated.")
+                print("saving Best model")
+                
                 
         print("="*100)
         print("--- Episode : {:<4}\tActions ".format(ep)+ np.array2string(a, formatter={'float_kind': '{0:.3f}'.format})+"\tReward : {:8.4f}".format(total_reward)+" ---")
